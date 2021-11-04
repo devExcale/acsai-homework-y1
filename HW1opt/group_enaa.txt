@@ -1,0 +1,26 @@
+# Write a function that takes as an input a list of integers
+# and prints on the screen all the numbers in the list
+# once with the times each number appears in the list.
+# SAVE THE function in something like group_n.py
+
+def count_int(mylist: list):
+	"""a function that takes as an input a list of integers between 0 and 1000
+	   and prints on the screen all the numbers in the list
+	   once with the times each number appears in the list."""
+
+	num_dict = { }
+
+	for n in mylist:
+
+		counter = num_dict.get(n)
+		if counter is None:
+			counter = 0
+		counter += 1
+		num_dict[n] = counter
+
+	for key, value in num_dict.items():
+		print(f"Number {key}: {value} times")
+
+
+if __name__ == "__main__":
+	count_int([1, 1, 7, 1, 2, 8, 2, 4, 7])
