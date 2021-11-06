@@ -1,57 +1,35 @@
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
-// TODO:
+The assignment is to code a function that plays the "Who Screams Louder"
+and returns a list, which is the final rankings of the game.
+
+Assuming the rules are already understood, it is already possible to start on the algorithm.
+
+First, we have to convert the strings and strip them of any whitespace (spaces or tabs)
+they have, because the strings we receive have whitespaces in them,
+which we need to ignore.
+
+Once we're done with the whitespace, we can start playing the matches.
+To make every pair possible we can use two nested loops:
+ - the outer one starts from the first player and ends with
+   the second-last player (because once it's the last player's turn,
+   he'll have already played with everyone else);
+ - the inner one starts from [the player ahead of the outer loop's player]
+   and ends with the last player.
+
+We take every pair (outer loop's player, inner loop's player) and make them play.
+To dispute a match, we take the two players' sequences and loop them simultaneously.
+obtaining two characters. The next step is to get the numeric value of those characters
+and calculate the difference, which we will call delta.
+
+Then, to evaluate the winner, we need to make a series of checks.
+If the delta is smaller or equal than K, the player with the higher value gets a point,
+otherwise, the player with the lower value gets a point.
+After looping through every character we count the points, the player with the most points wins.
+In the case of a tie, the player with the lowest sum of characters wins.
+To avoid computing every time the sum of the characters, an operation that can take time,
+we can save the sum somewhere and use it whenever we need it.
+In case of a further tie, we put the sequences in alphabetic order,
+the player of the first sequence wins.
+
+Once we have the final scores, we can sort the players from the most to the least points.
+With this order, we make a list with the starting positions of the players,
+which is the solution to the assignment.
