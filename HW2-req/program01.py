@@ -11,68 +11,71 @@ def ex(matches: list, k: int) -> list:
 	"""
 
 	n_players = len(matches)  # Number of players
-	players = []  # Players stats (index, score and sequence sum)
 
 	# Initialize sequences and stats
-	i = 0
-	while i < n_players:
-		players.append({
-			"index": i,
-			"score": 0,
-			"seq_ints": seq_to_ints(matches[i]),
-			"seq_sum": None
-		})
-		i += 1
+	players = tuple({
+		"index": i,
+		"score": 0,
+		"seq_ints": tuple(ord(char) for char in matches[i] if char != " " and char != "\t"),
+		"seq_sum": None
+	} for i in range(n_players))
 
-	# Play every match possible
-	i = 0
-	while i < n_players - 1:
-		j = i + 1
-
-		while j < n_players:
-			match(players[i], players[j], k)
-
-			j += 1
-		i += 1
+	for i in range(n_players - 1):
+		for j in range(i + 1, n_players):
+			do_match(players[i], players[j], k)
 
 	sorted_players = sorted(players, key=lambda player: player["score"], reverse=True)  # Sort by score
 	return [player["index"] for player in sorted_players]  # Return the original indexes only
 
 
-def match(player1: dict, player2: dict, k: int) -> None:
+def do_match(player1: dict, player2: dict, k: int) -> None:
 	"""
 
 	Compute a match of "Who Screams Louder"
 
-	:param player1: Stats about player1
-	:param player2: Stats about player2
+	:param player1: Player1's stats
+	:param player2: Player2's stats
 	:param k: Parameter K from the game
-	:return: None. The winner will have the (stats') score increased
+	:return: None, the function assigns the point automatically
 	"""
 
 	points_delta = 0
-	no_sign = abs
+	obliterate_sign = abs  # A little trick to make the program faster
 
-	i = 0
-	length = len(player1["seq_ints"])
-	while i < length:
+	# Loop both sequences in parallel
+	for i in range(len(player1["seq_ints"])):
 
 		val_char1 = player1["seq_ints"][i]
 		val_char2 = player2["seq_ints"][i]
-		val_delta = no_sign(val_char1 - val_char2)
+		val_delta = obliterate_sign(val_char1 - val_char2)  # Yup, here's the trick
 
 		if val_delta <= k:
-			if val_char1 > val_char2:  # Character 1 wins
+			if val_char1 > val_char2:  # Character 1 points++
 				points_delta += 1
-			elif val_char2 > val_char1:  # Character 2 wins
+			elif val_char2 > val_char1:  # Character 2 points++
 				points_delta -= 1
 		else:
-			if val_char1 < val_char2:  # Character 1 wins
+			if val_char1 < val_char2:  # Character 1 points++
 				points_delta += 1
-			elif val_char2 < val_char1:  # Character 2 wins
+			elif val_char2 < val_char1:  # Character 2 points++
 				points_delta -= 1
 
-		i += 1
+	assign_point(player1, player2, points_delta)  # Assign match point
+
+	return
+
+
+def assign_point(player1: dict, player2: dict, points_delta: int) -> None:
+	"""
+
+	Check, by the rules of "Who Screams Louder",
+	which of the two players gets the match point.
+
+	:param player1: Player1's stats
+	:param player2: Player2's stats
+	:param points_delta: The difference in points between the two players
+	:return: None, the function assigns the point automatically
+	"""
 
 	# First check: wins whoever has more points
 	if points_delta > 0:
@@ -85,9 +88,9 @@ def match(player1: dict, player2: dict, k: int) -> None:
 
 		# Calculate sequence value, if not already done, and store
 		if player1["seq_sum"] is None:
-			player1["seq_sum"] = seq_sum(player1["seq_ints"])
+			player1["seq_sum"] = sum(player1["seq_ints"])
 		if player2["seq_sum"] is None:
-			player2["seq_sum"] = seq_sum(player2["seq_ints"])
+			player2["seq_sum"] = sum(player2["seq_ints"])
 
 		sum_seq1 = player1["seq_sum"]
 		sum_seq2 = player2["seq_sum"]
@@ -104,31 +107,3 @@ def match(player1: dict, player2: dict, k: int) -> None:
 			player2["score"] += 1
 
 	return
-
-
-def seq_to_ints(seq: str) -> list:
-	ints = []
-	f = ord
-
-	for char in seq:
-		n = f(char)
-		if n != 32 and n != 9:
-			ints.append(n)
-
-	return ints
-
-
-def seq_sum(seq_ints: str) -> int:
-	"""
-
-	Sums the value of all the characters in a string
-
-	:param seq_ints: The starting string
-	:return: The sum of all the characters
-	"""
-
-	acc = 0
-	for n in seq_ints:
-		acc += n
-
-	return acc
