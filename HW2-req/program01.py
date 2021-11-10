@@ -12,19 +12,14 @@ def ex(matches: list, k: int) -> list:
 
 	n_players = len(matches)  # Number of players
 	players = []  # Players stats (index, score and sequence sum)
-	seqs = []  # Sequences without whitespaces
-	whitespace = {  # Ignored characters
-		ord(" "): None,
-		ord("\t"): None
-	}
 
 	# Initialize sequences and stats
 	i = 0
 	while i < n_players:
-		seqs.append(matches[i].translate(whitespace))
 		players.append({
 			"index": i,
 			"score": 0,
+			"seq_ints": seq_to_ints(matches[i]),
 			"seq_sum": None
 		})
 		i += 1
@@ -35,7 +30,7 @@ def ex(matches: list, k: int) -> list:
 		j = i + 1
 
 		while j < n_players:
-			match(seqs[i], seqs[j], players[i], players[j], k)
+			match(players[i], players[j], k)
 
 			j += 1
 		i += 1
@@ -44,13 +39,11 @@ def ex(matches: list, k: int) -> list:
 	return [player["index"] for player in sorted_players]  # Return the original indexes only
 
 
-def match(seq1: str, seq2: str, player1: dict, player2: dict, k: int) -> None:
+def match(player1: dict, player2: dict, k: int) -> None:
 	"""
 
 	Compute a match of "Who Screams Louder"
 
-	:param seq1: Player1's sequence
-	:param seq2: Player2's sequence
 	:param player1: Stats about player1
 	:param player2: Stats about player2
 	:param k: Parameter K from the game
@@ -58,14 +51,15 @@ def match(seq1: str, seq2: str, player1: dict, player2: dict, k: int) -> None:
 	"""
 
 	points_delta = 0
+	no_sign = abs
 
 	i = 0
-	length = len(seq1)
+	length = len(player1["seq_ints"])
 	while i < length:
 
-		val_char1 = ord(seq1[i])
-		val_char2 = ord(seq2[i])
-		val_delta = abs(val_char1 - val_char2)
+		val_char1 = player1["seq_ints"][i]
+		val_char2 = player2["seq_ints"][i]
+		val_delta = no_sign(val_char1 - val_char2)
 
 		if val_delta <= k:
 			if val_char1 > val_char2:  # Character 1 wins
@@ -91,9 +85,9 @@ def match(seq1: str, seq2: str, player1: dict, player2: dict, k: int) -> None:
 
 		# Calculate sequence value, if not already done, and store
 		if player1["seq_sum"] is None:
-			player1["seq_sum"] = seq_sum(seq1)
+			player1["seq_sum"] = seq_sum(player1["seq_ints"])
 		if player2["seq_sum"] is None:
-			player2["seq_sum"] = seq_sum(seq2)
+			player2["seq_sum"] = seq_sum(player2["seq_ints"])
 
 		sum_seq1 = player1["seq_sum"]
 		sum_seq2 = player2["seq_sum"]
@@ -104,7 +98,7 @@ def match(seq1: str, seq2: str, player1: dict, player2: dict, k: int) -> None:
 			player2["score"] += 1
 
 		# Further draw: win by alphabetic order
-		elif seq1 < seq2:
+		elif player1["seq_ints"] < player2["seq_ints"]:
 			player1["score"] += 1
 		else:
 			player2["score"] += 1
@@ -112,17 +106,29 @@ def match(seq1: str, seq2: str, player1: dict, player2: dict, k: int) -> None:
 	return
 
 
-def seq_sum(seq: str) -> int:
+def seq_to_ints(seq: str) -> list:
+	ints = []
+	f = ord
+
+	for char in seq:
+		n = f(char)
+		if n != 32 and n != 9:
+			ints.append(n)
+
+	return ints
+
+
+def seq_sum(seq_ints: str) -> int:
 	"""
 
 	Sums the value of all the characters in a string
 
-	:param seq: The starting string
+	:param seq_ints: The starting string
 	:return: The sum of all the characters
 	"""
 
 	acc = 0
-	for char in seq:
-		acc += ord(char)
+	for n in seq_ints:
+		acc += n
 
 	return acc
