@@ -16,9 +16,9 @@ def ex(matches: list, k: int) -> list:
 	players = tuple({
 		"index": i,
 		"score": 0,
-		"seq_ints": tuple(ord(char) for char in matches[i] if char != " " and char != "\t"),
+		"seq_ints": tuple(ord(char) for char in match if char != " " and char != "\t"),
 		"seq_sum": None
-	} for i in range(n_players))
+	} for i, match in enumerate(matches))
 
 	for i in range(n_players - 1):
 		for j in range(i + 1, n_players):
@@ -43,10 +43,11 @@ def do_match(player1: dict, player2: dict, k: int) -> None:
 	obliterate_sign = abs  # A little trick to make the program faster
 
 	# Loop both sequences in parallel
-	for i in range(len(player1["seq_ints"])):
+	# for i in range(len(player1["seq_ints"])):
+	for val_char1, val_char2 in zip(player1["seq_ints"], player2["seq_ints"]):
 
-		val_char1 = player1["seq_ints"][i]
-		val_char2 = player2["seq_ints"][i]
+		# val_char1 = player1["seq_ints"][i]
+		# val_char2 = player2["seq_ints"][i]
 		val_delta = obliterate_sign(val_char1 - val_char2)  # Yup, here's the trick
 
 		if val_delta <= k:
@@ -87,9 +88,9 @@ def assign_point(player1: dict, player2: dict, points_delta: int) -> None:
 	else:
 
 		# Calculate sequence value, if not already done, and store
-		if player1["seq_sum"] is None:
+		if not player1["seq_sum"]:
 			player1["seq_sum"] = sum(player1["seq_ints"])
-		if player2["seq_sum"] is None:
+		if not player2["seq_sum"]:
 			player2["seq_sum"] = sum(player2["seq_ints"])
 
 		sum_seq1 = player1["seq_sum"]
