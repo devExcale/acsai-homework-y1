@@ -50,7 +50,7 @@ IN -> ['IH0 N', 'IH1 N'] -> 0
 space -> 0
 the -> ['DH AH0', 'DH AH1', 'DH IY0'] -> 0
 space -> 0
-midaway - > ['M IH1 D W EY2'] -> 1,0
+midway - > ['M IH1 D W EY2'] -> 1,0
 space -> 0
 of -> ['AH1 V'] -> 1
 space -> 0
