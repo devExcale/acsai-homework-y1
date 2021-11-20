@@ -8,7 +8,7 @@ from math import sqrt
 def PoemSync(input_file: str, output_file: str, tau: int) -> float:
 	"""
 
-	Compute the sync of a poem
+	Compute the sync of a poem.
 
 	:param input_file: Where to read the poem from
 	:param output_file: Where to output the stresses' matrix
@@ -48,7 +48,7 @@ def PoemSync(input_file: str, output_file: str, tau: int) -> float:
 def output_matrix(file_path: str, matrix: tuple) -> None:
 	"""
 
-	Literally print the matrix on a file
+	Literally print the matrix on a file.
 
 	:param file_path: The output file's path
 	:param matrix: The matrix(Iterable[Iterable[Any]])
@@ -93,12 +93,15 @@ def flat(arr: map) -> list:
 	A convenience function, used to flatmap.
 	Man, I sure do miss java.
 
-	:param arr:
-	:return:
+	:param arr: The array to flatten
+	:return: The flattened array
 	"""
+
 	flattened = []
+
 	for item in arr:
 		flattened.extend(item)
+
 	return flattened
 
 
@@ -110,7 +113,7 @@ def c(row1: tuple, row2: tuple, tau: int) -> int:
 	:param row1: First line stresses
 	:param row2: Second line stresses
 	:param tau: Tau parameter
-	:return:
+	:return: The function's value
 	"""
 
 	counter = 0
