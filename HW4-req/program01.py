@@ -8,20 +8,31 @@ from math import sqrt
 def PoemSync(input_file: str, output_file: str, tau: int) -> float:
 	"""
 
-	:param input_file:
-	:param output_file:
-	:param tau:
-	:return:
+	Compute the sync of a poem
+
+	:param input_file: Where to read the poem from
+	:param output_file: Where to output the stresses' matrix
+	:param tau: Value to calculate the sync with
+	:return: The even of all syncs (rounded to the 6th decimal digit)
 	"""
 
+	# Open the file and read all the lines, removing blank ones
+	# Also, remove every character which isn't a letter
 	with open(input_file, "r", encoding="utf-8") as input_stream:
-		rows = tuple(filter(None, map(normify_string, input_stream.readlines())))
+		lines = tuple(filter(None, map(edit_illegal_chars, input_stream)))
 
-	matrix = tuple(flat(map(stresses_for, line.split())) for line in rows)
+	# Transmute the list of lines into a matrix of stresses,
+	# where each row is a line from the poem
+	matrix = tuple(flat(map(stresses_for, line.split())) for line in lines)
 
+	# Fill the blank spots in the matrix with 0's
 	max_len = max(map(len, matrix))
-	matrix = tuple(tuple(row + ([0] * (max_len - len(row)))) for row in matrix)
+	matrix = tuple(map(lambda row: tuple(row + ([0] * (max_len - len(row)))), matrix))
 
+	# Print the matrix to the specified file
+	output_matrix(output_file, matrix)
+
+	# Compute the sync value for every 2-rows combination (except with the same row)
 	syncs = []
 	for row1 in matrix:
 		for row2 in matrix:
@@ -30,23 +41,61 @@ def PoemSync(input_file: str, output_file: str, tau: int) -> float:
 			root = sum(row1) * sum(row2)
 			syncs.append((c(row1, row2, tau) + c(row2, row1, tau)) / sqrt(root) / 2 if root else root)
 
-	with open(output_file, "w", newline="\n", encoding="utf-8") as output_stream:
-		for line in matrix:
-			print("".join(map(str, line)), file=output_stream, end="\n")
-
+	# Return the even of syncs, rounded to the 6th decimal digit
 	return round(sum(syncs) / len(syncs), 6)
 
 
-def normify_string(string: str) -> str:
+def output_matrix(file_path: str, matrix: tuple) -> None:
+	"""
+
+	Literally print the matrix on a file
+
+	:param file_path: The output file's path
+	:param matrix: The matrix(Iterable[Iterable[Any]])
+	:return: None
+	"""
+	with open(file_path, "w", newline="\n", encoding="utf-8") as output_stream:
+		for line in matrix:
+			print("".join(map(str, line)), file=output_stream, end="\n")
+	return
+
+
+def edit_illegal_chars(string: str) -> str:
+	"""
+
+	Remove illegal characters from the string.
+	Changes apostrophes and dashes into spaces,
+	removes other special characters.
+
+	:param string: The input string
+	:return: The edited string
+	"""
 	return "".join(char if char.isalpha() else " " if char in " '-" else "" for char in string)
 
 
 def stresses_for(word: str) -> list:
+	"""
+
+	Computes how many stresses the word has.
+	If it isn't known, returns many 0's as half the length of the word.
+	Adds a 0 to the end, for convenience.
+
+	:param word:
+	:return: A list with the stresses
+	"""
 	phonetic = phones_for_word(word)
 	return map(int, stresses(phonetic[0]).translate({ 50: "0" }) + "0") if phonetic else [0] * (len(word) // 2 + 1)
 
 
 def flat(arr: map) -> list:
+	"""
+
+	A convenience function, used to flatmap.
+	Man, I sure do miss java.
+
+	:param arr:
+	:return:
+	"""
 	flattened = []
 	for item in arr:
 		flattened.extend(item)
@@ -56,10 +105,10 @@ def flat(arr: map) -> list:
 def c(row1: tuple, row2: tuple, tau: int) -> int:
 	"""
 
-	Function c from the exercise
+	Function c, used to compute the sync between two lines.
 
-	:param row1: First row
-	:param row2: Second row
+	:param row1: First line stresses
+	:param row2: Second line stresses
 	:param tau: Tau parameter
 	:return:
 	"""

@@ -1,0 +1,15 @@
+How to find the Sync of a poem:
+
+(Premises)
+ - The poem is saved on a file, which we'll have to read
+ - We'll have to print the matrix of stresses on a file
+
+1. Read all the lines of the poem from a file, saving them into a vector
+2. Filter out blank lines, and remove unnecessary characters from the lines
+3. Calculate the stresses for every word for every line, adding a 0 (stress) after every word.
+   We'll now have an (incomplete) matrix: the rows are the stresses contained in the corresponding line
+4. Complete the matrix by filling with 0's the blank spots
+5. It is already possible to print out the matrix on the file, so let's do so
+6. Make every combination possible of rows (except where the same row appears twice)
+7. Compute the sync for every combination and save them: then compute the even of all values
+8. Return the obtained value, rounded down to the 6th decimal place
