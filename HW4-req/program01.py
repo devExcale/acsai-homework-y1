@@ -80,7 +80,7 @@ def stresses_for(word: str) -> list:
 	If it isn't known, returns many 0's as half the length of the word.
 	Adds a 0 to the end, for convenience.
 
-	:param word:
+	:param word: Word to analyze
 	:return: A list with the stresses
 	"""
 	phonetic = phones_for_word(word)
