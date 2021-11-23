@@ -36,6 +36,15 @@ def PoemSync(input_file: str, output_file: str, tau: int) -> float:
 
 
 def compute_sync(row1: list, row2: list, tau: int) -> float:
+	"""
+
+	Compute the sync for two rows of accents.
+
+	:param row1: First row
+	:param row2: Second row
+	:param tau: Tau parameter, used to compute the sync
+	:return: The sync of the first row with the second one
+	"""
 	root = sum(row1) * sum(row2)
 	return (c(row1, row2, tau) + c(row2, row1, tau)) / sqrt(root) if root else root
 
@@ -54,7 +63,7 @@ def output_matrix(file_path: str, matrix: tuple) -> None:
 	max_len = max(map(len, matrix))
 	with open(file_path, "w", newline="\n", encoding="utf-8") as output_stream:
 		for line in matrix:
-			print("".join(map(str, line)) + "0" * (max_len - len(line)), file=output_stream, end="\n")
+			print("".join(map(str, line)), "0" * (max_len - len(line)), file=output_stream, end="\n")
 	return
 
 
