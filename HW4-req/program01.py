@@ -63,7 +63,7 @@ def output_matrix(file_path: str, matrix: tuple) -> None:
 	max_len = max(map(len, matrix))
 	with open(file_path, "w", newline="\n", encoding="utf-8") as output_stream:
 		for line in matrix:
-			print("".join(map(str, line)), "0" * (max_len - len(line)), file=output_stream, end="\n")
+			print("".join(map(str, line)), "0" * (max_len - len(line)), file=output_stream, sep="", end="\n")
 	return
 
 
@@ -127,7 +127,7 @@ def c(row1: list, row2: list, tau: int) -> int:
 
 	for i, value in enumerate(row1):
 		if value:
-			if 1 in row2[max(0, i - tau):i + 1]:
+			if 1 in row2[i - tau if i > tau else 0:i + 1]:
 				counter += 1
 
 	return counter
