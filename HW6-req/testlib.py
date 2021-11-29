@@ -1,26 +1,19 @@
 import time, sys
+import importlib
 import stopit
 import unittest, unittest.mock
 from hashlib import sha1
+from contextlib import contextmanager
+import tempfile, os, os.path
+
+DEBUG=True
+DEBUG=False
 
 class ForbiddenError(Exception):
     pass
 
 class TimeoutError(Exception):
     pass
-
-class Timer:
-    def __init__(self, timeout):
-        self.timeout = timeout
-
-    def __enter__(self):
-        self.start = time.time()
-
-    def __exit__(self, *args):
-        wallclock_time = round(time.time() - self.start, 3)
-        if wallclock_time > self.timeout:
-            raise TimeoutError(f'Timeout! ({wallclock_time} > {self.timeout})')
-
 
 class TestCase(unittest.TestCase):
     __orig_import = __builtins__['__import__']
@@ -57,13 +50,13 @@ class TestCase(unittest.TestCase):
                 mode = kargs.get('mode', 'r')
             filename = args[0]
             for fn,m in allowed.items():
-                #print(f"Checking file {filename} with mode {mode} ({fn}:{m})")
+                #print(f"Checking file '{filename}' with mode '{mode}' ('{fn}':'{m}')")
                 if filename.endswith(fn):
                     if not mode in m:
                         print(f"Opening file '{filename}' with mode '{mode}' is not allowed!")
                         raise ForbiddenError(f"Opening file '{filename}' with mode='{mode}' is forbidden!")
-                else:
-                    break
+                    else:
+                        break
             else:
                 print(f"Opening file '{filename}' with mode '{mode}' is not allowed!")
                 raise ForbiddenError(f"Opening file '{filename}' with mode='{mode}' is forbidden!")
@@ -83,15 +76,82 @@ class TestCase(unittest.TestCase):
         # Return a 'with' context that ignores a target function: by default 'builtins.print'
         return unittest.mock.patch(target, new=lambda *x, **k: None)
 
-    def timer(self, sec):
+    @contextmanager
+    def timer(self, timeout):
         '''Return a context in which the execution time is measured and, if necessary, a time-out exception is thrown.
-        This way, the timeout is detected even if the timeout signal is captured.'''
-        return Timer(sec)
+        This way, the timeout is detected even if the timeout signal is captured. (yield version)'''
+        start = time.time()
+        try:
+            yield start
+        finally:
+            wallclock_time = round(time.time() - start, 3)
+            if wallclock_time > timeout:
+                raise TimeoutError(f'Timeout! ({wallclock_time} > {timeout})')
 
     def timeout(self, sec):
         '''Return a 'with' context to stop the code when the timeout expires.'''
         return stopit.ThreadingTimeout(sec, swallow_exc=False)
         #return stopit.SignalTimeout(sec, swallow_exc=False)
+
+    @contextmanager
+    def assertIsRecursive(self, module):
+        '''Return a 'with' context to check for recursion.'''
+        import isrecursive
+        with    self.imported(module) as program01, \
+                self.decorated(program01) as program, \
+                self.assertRaises( isrecursive.RecursionDetectedError ):
+            yield program
+
+    @contextmanager
+    def decorated(self, module):
+        '''Return a 'with' context decorating all functions/methods to raise RecursionDetectedError if recursive.'''
+        import isrecursive
+        isrecursive.decorate_module(module)
+        try:
+            yield module
+        finally:
+            isrecursive.undecorate_module(module)
+        
+    @contextmanager
+    def imported(self, module):
+        '''Return a 'with' context to import/unimport the module'''
+        program = importlib.import_module(module)
+        try:
+            yield program
+        finally:
+            del program
+            del sys.modules[module]
+
+    @contextmanager
+    def randomized_symbol(self, module, symbol):
+        '''Renames randomly a symbol in a module'''
+        import random, string
+        random_name = ''.join(random.choices(string.ascii_letters, k=20))
+        if DEBUG: print(module, symbol, ' -> ', random_name)
+        value = getattr(module, symbol)
+        setattr(module, random_name, value)
+        delattr(module, symbol)
+        try:
+            yield random_name
+        finally:
+            if DEBUG: print(module, random_name, ' -> ', symbol)
+            setattr(module, symbol, value)
+            delattr(module, random_name)
+
+    @contextmanager
+    def randomized_filename(self, filename):
+        '''Return a 'with' context to randomize a filename before using it. (yield version)'''
+        import tempfile, os, os.path
+        name, ext = filename.split('.')                                                                                             
+        randomized = next(tempfile._get_candidate_names()) + '.' + ext                                                         
+        if os.path.isfile(filename):
+            if DEBUG: print(filename, ' -> ', randomized)
+            os.rename(filename, randomized)
+            try:
+                yield
+            finally:
+                if DEBUG: print(self.filename, ' <- ', self.randomized)
+                os.rename(self.randomized, self.filename)
 
     def check(self, value, expected, params=None, explanation=''):
         # TODO: add deepcopy of value to avoid side effects
@@ -151,6 +211,22 @@ class TestCase(unittest.TestCase):
             B = json.load(f2)
         self.assertEqual(A, B, msg)
 
+    def check_json_file_to_list(self, jsonf, result, msg=(f'\n{"*"*100}\n README: The list of all generated images is ' 
+                                                          f'NOT correct.\nthe FIRST set mentioned above is the EXPECTED; '
+                                                          f'SECOND set is your RESULT\n'
+                                                          f'> "Items in the first set but not the second"\n\tMEANS you are MISSING some useful images\n'
+                                                          f'> "Items in the second set but not the first"\n\tMEANS you are generating TOO '
+                                                          f'many images with not useful properties\n{"*"*100}')                                
+                                ):
+        import json
+        with open(jsonf, 'r', encoding='utf8') as fr:
+            expected = json.load(fr)['expected']
+        expected_s = tuple(tuple(tuple(tuple(c) for c in row) for row in mat) for mat in expected)
+        expected_s = set(expected_s)
+        result_s = set(result)
+        self.assertSetEqual(expected_s, result_s, msg)
+    
+        
     @classmethod
     def main(cls):
         suite = unittest.TestSuite()
