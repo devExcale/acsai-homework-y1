@@ -10,26 +10,19 @@ def ex(data_file_path: str, png_file_path: str, spacing: int) -> tuple:
 
 	build_grid = parse_buildings_grid(data_file_path)
 
-	inner_width = max(sum(building["width"] for building in row) + spacing * (len(row) - 1) for row in build_grid)
-	inner_height = sum(max(building["height"] for building in row) for row in build_grid) + spacing * (len(build_grid) - 1)
+	full_width = max(sum(building["width"] for building in row) + spacing * (len(row) + 1) for row in build_grid)
+	full_height = sum(max(building["height"] for building in row) for row in build_grid) + spacing * (len(build_grid) + 1)
 
-	full_width = inner_width + spacing * 2
-	full_height = inner_height + spacing * 2
-
-	map(print, build_grid)
-	for row in build_grid:
-		print(row)
-	print(f"Inner Width: {inner_width}")
-	print(f"Inner Height: {inner_height}")
-	print(f"Full Width: {full_width}")
-	print(f"Full Height: {full_height}")
-
-	image = [[(0, 0, 0) for _ in range(full_width)] for _ in range(full_height)]
+	image = blank_image(full_width, full_height)
 
 	draw_buildings(image, build_grid, spacing)
 	save(image, png_file_path)
 
 	return full_width, full_height
+
+
+def blank_image(width: int, height: int) -> list:
+	return [[(0, 0, 0)] * width for _ in range(height)]
 
 
 def draw_buildings(image: list, build_grid: list, spacing: int) -> None:
@@ -43,8 +36,9 @@ def draw_buildings(image: list, build_grid: list, spacing: int) -> None:
 	for row in build_grid:
 		offset_y += spacing
 
-		row_height = max(b["height"] for b in row)
-		row_spacing = (width - spacing * 2 - sum(b["width"] for b in row)) // (len(row) - 1 if len(row) > 1 else 2)
+		row_len = len(row) - 1
+		row_height = max(map(lambda b: b["height"], row))
+		row_spacing = (width - spacing * 2 - sum(map(lambda b: b["width"], row))) // (row_len if row_len else 2)
 
 		offset_x = spacing
 		for building in row:
@@ -55,14 +49,18 @@ def draw_buildings(image: list, build_grid: list, spacing: int) -> None:
 				dh = 0
 				offset_x += row_spacing
 
-			for i in range(building["height"]):
-				for j in range(building["width"]):
-					image[offset_y + dh + i][offset_x + j] = building["color"]
+			draw_rect(image, offset_x, offset_y + dh, building)
 
 			offset_x += row_spacing + building["width"]
 		offset_y += row_height
 
 	return
+
+
+def draw_rect(image: list, x: int, y: int, building: dict) -> None:
+	for i in range(building["height"]):
+		for j in range(building["width"]):
+			image[y + i][x + j] = building["color"]
 
 
 def parse_buildings_grid(file_path: str) -> list:
@@ -76,9 +74,9 @@ def parse_buildings_grid(file_path: str) -> list:
 		for line in lines:
 			int_values = list(map(int, filter(None, "".join(line.split()).split(","))))
 			buildings_grid.append(list(map(lambda i: {
-				"width": int_values[i * 5],
-				"height": int_values[i * 5 + 1],
-				"color": (int_values[i * 5 + 2], int_values[i * 5 + 3], int_values[i * 5 + 4])
-			}, range(len(int_values) // 5))))
+				"width": int_values[i],
+				"height": int_values[i + 1],
+				"color": (int_values[i + 2], int_values[i + 3], int_values[i + 4])
+			}, range(0, len(int_values) - 4, 5))))
 
 	return buildings_grid
