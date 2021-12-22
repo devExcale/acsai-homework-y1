@@ -1,0 +1,29 @@
+First, I've got to say that my program isn't complete.
+It works for every property but pattern_diff_ and blank property.
+
+To recover all the images, we make use of a recursive function, which takes in input
+all the colours, the image size and the properties. What this function does
+is "enlarging" by one pixel the image generated previously (recursively by the same function).
+To do so, the first thing the function has to do is get the smaller image (size - 1) by calling itself.
+This "loop" will continue until we get to image size equal to 1. In this case, we know for sure
+that the image will be just one colour, so for every colour we generate a 1x1 matrix and return them.
+
+To avoid the function calling itself forever, we'll have to put this check before the
+function calls for itself, so actually this check will be the first things the function will do.
+
+Once we've got the list of all possible smaller images, we're going to enlarge them by one pixel
+based on the given pattern.
+To make life easier, we'll create a function for every pattern:
+
+- hrect: Extend the matrix horizontally by one column, each colour in this column is going to be
+  the colour on its left. Then, add a row at the end, where each colour is going to be the one colour
+  picked from the list of colours. (We'll do this for every colour, minus the colour of the last row)
+
+- vrect: Same thing as hrect, but translated.
+
+- cross: Actually this is easy. If the image size is 1, we can generate a "preset" image
+  for every colour (minus the only pixel colour), if the image size is > 1 extend the first two rows
+  by one pixel (with the dual colour), and then copy down these two rows alternating them until
+  you have a square matrix.
+
+Haven't done none and diff yet
