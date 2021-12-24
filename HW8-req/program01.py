@@ -12,7 +12,13 @@ def ex(colors: list, D: int, img_properties: str) -> list:
 	"""
 
 	if D == 1:
-		return [((colour,),) for colour in colors]
+		if len(colors) == 1:
+			return [((colors[0],),)]
+		else:
+			a = []
+			for colour in colors:
+				a.extend(ex([colour], D, img_properties))
+			return a
 
 	new_images = []
 	images = ex(colors, D - 1, img_properties)
@@ -97,10 +103,10 @@ def pattern_diff(image: list, colours: list, slider: int = -1) -> list:
 		new_images.append(new_image)
 
 	elif slider < 0:		# function entry point
-		return list(map(lambda img: tuple(map(tuple, img)), pattern_none(image, colours, len(image) * 2 + 1)))
+		return list(map(lambda img: tuple(map(tuple, img)), pattern_diff(image, colours, len(image) * 2 + 1)))
 
 	else:
-		images = pattern_none(image, colours, slider - 1)
+		images = pattern_diff(image, colours, slider - 1)
 		side = len(images[0])
 
 		if slider < side:
