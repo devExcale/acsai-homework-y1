@@ -6,6 +6,10 @@ from images import save
 def ex(data_file_path: str, png_file_path: str, spacing: int) -> tuple:
 	"""
 
+	:param data_file_path:
+	:param png_file_path:
+	:param spacing:
+	:return:
 	"""
 
 	build_grid = parse_buildings_grid(data_file_path)
@@ -22,12 +26,22 @@ def ex(data_file_path: str, png_file_path: str, spacing: int) -> tuple:
 
 
 def blank_image(width: int, height: int) -> list:
+	"""
+
+	:param width:
+	:param height:
+	:return:
+	"""
 	return [[(0, 0, 0)] * width for _ in range(height)]
 
 
 def draw_buildings(image: list, build_grid: list, spacing: int) -> None:
 	"""
 
+	:param image:
+	:param build_grid:
+	:param spacing:
+	:return:
 	"""
 
 	width = len(image[0])
@@ -58,6 +72,14 @@ def draw_buildings(image: list, build_grid: list, spacing: int) -> None:
 
 
 def draw_rect(image: list, x: int, y: int, building: dict) -> None:
+	"""
+
+	:param image:
+	:param x:
+	:param y:
+	:param building:
+	:return:
+	"""
 	for i in range(building["height"]):
 		for j in range(building["width"]):
 			image[y + i][x + j] = building["color"]
@@ -66,8 +88,9 @@ def draw_rect(image: list, x: int, y: int, building: dict) -> None:
 def parse_buildings_grid(file_path: str) -> list:
 	"""
 
+	:param file_path:
+	:return:
 	"""
-
 	buildings_grid = []
 
 	with open(file_path, "r", encoding="utf-8") as lines:
